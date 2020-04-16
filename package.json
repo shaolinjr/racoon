@@ -1,6 +1,6 @@
 {
   "name": "racoon",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Swift, Precise and Furtive Web Scraping Library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
