@@ -9,6 +9,10 @@
     "tsc-watch": "tsc --watch",
     "test": "node dist/index.js"
   },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
   "author": "Arthur Pires",
   "license": "ISC",
   "dependencies": {
