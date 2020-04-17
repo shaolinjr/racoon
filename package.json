@@ -1,5 +1,5 @@
 {
-  "name": "racoon",
+  "name": "rakoon",
   "version": "0.0.2",
   "description": "Swift, Precise and Furtive Web Scraping Library",
   "main": "dist/index.js",
