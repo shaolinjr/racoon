@@ -2,7 +2,7 @@
 Swift, Precise and Furtive Web Scraping Library
 
 <p align="center">
-<img src="assets/images/rakoon-hr.png" width="65%"/>
+<img src="assets/images/rakoon2-hr.png" width="65%" alt=/>
 </p>
 
 
