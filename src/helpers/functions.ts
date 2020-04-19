@@ -57,3 +57,27 @@ export function extractPriceFromString(priceInText: string): number {
         return null
     }
 }
+
+/**
+ * This function will trigger a automatic scroll on the page and will stop when it reaches the bottom
+ * @param page {puppeteer.Page} Puppeteer Page instance
+ * @param distanceToScroll {number} Distance in pixels to scroll the page per cycle
+ * @param speed {number} Control how fast the page is scrolled (in ms)
+ */
+export async function autoScroll(page: any, distanceToScroll: number, speed: number) {
+    await page.evaluate(async (speed, distanceToScroll) => {
+        await new Promise((resolve, reject) => {
+            let scrolledHeight = 0;
+            const timer = setInterval(() => {
+                var windowScrollHeight = document.body.scrollHeight;
+                console.log("WindowHeight: ", windowScrollHeight)
+                window.scrollBy(0, distanceToScroll)
+                scrolledHeight += distanceToScroll
+                if (scrolledHeight >= windowScrollHeight) {
+                    clearInterval(timer)
+                    resolve()
+                }
+            }, speed);
+        });
+    }, speed, distanceToScroll);
+}

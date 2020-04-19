@@ -6,8 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "tsc": "tsc",
-    "tsc-watch": "tsc --watch",
-    "test": "node dist/index.js"
+    "tsc:watch": "tsc --watch",
+    "test": "jest"
   },
   "files": [
     "src/**/*",
@@ -19,6 +19,14 @@
     "@types/csvtojson": "^1.1.5",
     "axios": "^0.19.2",
     "cheerio": "^1.0.0-rc.3",
-    "csvtojson": "^2.0.10"
+    "csvtojson": "^2.0.10",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "@shelf/jest-mongodb": "^1.1.5",
+    "@types/dotenv": "^8.2.0",
+    "@types/mongodb": "^3.5.8",
+    "jest": "^25.3.0",
+    "mongodb": "^3.5.6"
   }
 }
