@@ -9,3 +9,5 @@ exports.removeExtraSlashesFromUrl = functions_1.removeExtraSlashesFromUrl;
 exports.restartIndex = functions_1.restartIndex;
 exports.stripLeftZerosFromGTIN = functions_1.stripLeftZerosFromGTIN;
 exports.timeoutPromise = functions_1.timeoutPromise;
+exports.extractDurationFromString = functions_1.extractDurationFromString;
+exports.extractHoursAmountFromString = functions_1.extractHoursAmountFromString;

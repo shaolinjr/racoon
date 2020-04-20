@@ -6,5 +6,7 @@ export {
     removeExtraSlashesFromUrl,
     restartIndex,
     stripLeftZerosFromGTIN,
-    timeoutPromise
+    timeoutPromise,
+    extractDurationFromString,
+    extractHoursAmountFromString
 } from './functions'
