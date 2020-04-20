@@ -13,3 +13,5 @@ export declare function extractPriceFromString(priceInText: string): number;
  * @param speed {number} Control how fast the page is scrolled (in ms)
  */
 export declare function autoScroll(page: any, distanceToScroll: number, speed: number): Promise<void>;
+export declare function extractHoursAmountFromString(text: string): number;
+export declare function extractDurationFromString(text: string): number;

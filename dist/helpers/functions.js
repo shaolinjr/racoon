@@ -91,3 +91,27 @@ async function autoScroll(page, distanceToScroll, speed) {
     }, speed, distanceToScroll);
 }
 exports.autoScroll = autoScroll;
+// This function can be in the rakoon helper
+function extractHoursAmountFromString(text) {
+    // 440 h – 12 meses
+    // 12 meses - 400h
+    let hoursPattern = new RegExp("(?:(?<hours>[0-9]+)\\s*h)", "gi");
+    let result = hoursPattern.exec(text);
+    if (result) {
+        return parseInt(result.groups.hours);
+    }
+    return null;
+}
+exports.extractHoursAmountFromString = extractHoursAmountFromString;
+// This function can be in the rakoon helper
+function extractDurationFromString(text) {
+    // 440 h – 12 meses
+    // 12 meses - 400h
+    let durationPattern = new RegExp("(?<months>[0-9]+)\\s*m(?:ês|eses)", "gi");
+    let result = durationPattern.exec(text);
+    if (result) {
+        return parseInt(result.groups.months);
+    }
+    return null;
+}
+exports.extractDurationFromString = extractDurationFromString;
