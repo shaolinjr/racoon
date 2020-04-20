@@ -59,10 +59,35 @@ function extractPriceFromString(priceInText) {
     const priceRegex = new RegExp("(?<price>(?:(?:[0-9]{1,3}[.]{1})+[0-9]{3,}|[0-9]+),[0-9]{2})");
     const match = priceInText.match(priceRegex);
     if (match) {
-        return parseInt(match.groups.price.replace(/[,.]/g, "")) / 100;
+        const price = priceRegex.exec(priceInText).groups.price;
+        return parseInt(price.replace(/[,.]/g, "")) / 100;
     }
     else {
         return null;
     }
 }
 exports.extractPriceFromString = extractPriceFromString;
+/**
+ * This function will trigger a automatic scroll on the page and will stop when it reaches the bottom
+ * @param page {puppeteer.Page} Puppeteer Page instance
+ * @param distanceToScroll {number} Distance in pixels to scroll the page per cycle
+ * @param speed {number} Control how fast the page is scrolled (in ms)
+ */
+async function autoScroll(page, distanceToScroll, speed) {
+    await page.evaluate(async (speed, distanceToScroll) => {
+        await new Promise((resolve, reject) => {
+            let scrolledHeight = 0;
+            const timer = setInterval(() => {
+                var windowScrollHeight = document.body.scrollHeight;
+                console.log("WindowHeight: ", windowScrollHeight);
+                window.scrollBy(0, distanceToScroll);
+                scrolledHeight += distanceToScroll;
+                if (scrolledHeight >= windowScrollHeight) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, speed);
+        });
+    }, speed, distanceToScroll);
+}
+exports.autoScroll = autoScroll;

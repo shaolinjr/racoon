@@ -7,21 +7,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongodb_1 = require("mongodb");
 const errors_1 = require("./errors");
 class CrawlerStorage {
-    /**
-     * This class will expose the basic functionality our persistent layer will have
-     * @param uri {string} URI to connect to MongoDB
-     * @param options {MongoClientOptions} Object with the options regarding the MongoDB connection
-     */
-    constructor(uri, options = null, modelSchema = null) {
+    constructor(uri, dbName, options = null, modelSchema = null) {
         this.uri = uri;
+        this.dbName = dbName;
         this.options = options;
         this.modelSchema = modelSchema;
     }
-    connectToDB() {
+    async connectToDB() {
         return new Promise(async (resolve, reject) => {
             try {
-                const client = await mongodb_1.MongoClient.connect(this.uri, this.options);
-                resolve(client);
+                if (!this.client.isConnected()) {
+                    const client = await mongodb_1.MongoClient.connect(this.uri, this.options);
+                    this.client = client;
+                    this.db = client.db(this.dbName);
+                }
+                resolve(this.client);
             }
             catch (error) {
                 console.log("Error connecting to the DB...");
@@ -31,12 +31,15 @@ class CrawlerStorage {
             }
         });
     }
+    async closeDBConnection() {
+        return this.client.isConnected() ? this.client.close() : null;
+    }
     insertOne(element, collection) {
         if (this.modelSchema && typeof this.modelSchema != typeof element) {
             throw errors_1.WrongSchemaFormatError();
         }
         else {
-            // just do what you've gotta do
+            return this.db.collection(collection).insertOne(element);
         }
     }
     insertMany(elements, collection) {
@@ -44,7 +47,8 @@ class CrawlerStorage {
             throw errors_1.WrongSchemaFormatError();
         }
         else {
-            // just do what you've gotta do
+            return this.db.collection(collection).insertOne(elements);
         }
     }
 }
+exports.CrawlerStorage = CrawlerStorage;
