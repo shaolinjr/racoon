@@ -52,7 +52,8 @@ export function extractPriceFromString(priceInText: string): number {
     const priceRegex = new RegExp("(?<price>(?:(?:[0-9]{1,3}[.]{1})+[0-9]{3,}|[0-9]+),[0-9]{2})")
     const match = priceInText.match(priceRegex)
     if (match) {
-        return parseInt(match.groups.price.replace(/[,.]/g, "")) / 100
+        const price = priceRegex.exec(priceInText).groups.price
+        return parseInt(price.replace(/[,.]/g, "")) / 100
     } else {
         return null
     }
