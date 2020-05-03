@@ -9,12 +9,26 @@ export {
     timeoutPromise,
     extractDurationFromString,
     extractHoursAmountFromString,
-    applyMixins
-} from './functions'
-
-export {
+    applyMixins,
     fileExists,
     validFileExtension,
     getFileExtension,
     checkFile
-} from './file'
+} from './helpers'
+
+export {
+    CrawlerRunOptions,
+    CrawlerRequestOptions,
+    ILink
+} from './models'
+
+// export * from './models'
+
+export {
+    S3,
+    DefaultExporter
+} from './data-exporters'
+
+export {
+    ProviderManager
+} from './manageProviders'

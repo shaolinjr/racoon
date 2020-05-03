@@ -1,0 +1,136 @@
+[{
+        "extractedAt": "2020-04-26T14:42:41.632Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "TOC LAC",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 29.9,
+        "productId": 591234,
+        "url": "https://www.drogaclara.com.br/alimentos/doces-e-chocolates/OVO-DE-PASCOA-TOC-MIX-250G",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    },
+    {
+        "extractedAt": "2020-04-26T14:42:41.823Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "TOC LAC",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 17.9,
+        "productId": 591231,
+        "url": "https://www.drogaclara.com.br/alimentos/doces-e-chocolates/OVO-DE-PASCOA-TOC-MIX-100G",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    },
+    {
+        "extractedAt": "2020-04-26T14:42:41.976Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "FERRERO DO BRASIL",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 6.9,
+        "productId": 584237,
+        "url": "https://www.drogaclara.com.br/alimentos/doces-e-chocolates/KINDER-OVO-20G",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    },
+    {
+        "extractedAt": "2020-04-26T14:42:42.189Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "COCA COLA",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 4.99,
+        "productId": 58898,
+        "url": "https://www.drogaclara.com.br/alimentos/bebidas/isotonico-i9-uva-verde-500ml",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    },
+    {
+        "extractedAt": "2020-04-26T14:42:42.089Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "COCA COLA",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 4.99,
+        "productId": 52296,
+        "url": "https://www.drogaclara.com.br/alimentos/bebidas/isotonico-i9-tangerina-500ml",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    },
+    {
+        "extractedAt": "2020-04-26T14:42:44.740Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "COCA COLA",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 4.99,
+        "productId": 52297,
+        "url": "https://www.drogaclara.com.br/alimentos/bebidas/isotonico-i9-limao-500ml",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    },
+    {
+        "extractedAt": "2020-04-26T14:42:44.524Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "COMERCIAL PORTO SEGURO LTDA",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 1.99,
+        "productId": 586559,
+        "url": "https://www.drogaclara.com.br/alimentos/balas-e-chicletes/DROPS-HALLS-UVA-VERDE-28G",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    },
+    {
+        "extractedAt": "2020-04-26T14:42:44.552Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "COMERCIAL PORTO SEGURO LTDA",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 1.99,
+        "productId": 586558,
+        "url": "https://www.drogaclara.com.br/alimentos/balas-e-chicletes/drops-halls-morango-28g",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    },
+    {
+        "extractedAt": "2020-04-26T14:42:46.180Z",
+        "oldPrice": null,
+        "gtin": null,
+        "brand": "CANONNE",
+        "msRecord": null,
+        "name": null,
+        "currentPrice": 1.49,
+        "productId": 27428,
+        "url": "https://www.drogaclara.com.br/alimentos/balas-e-chicletes/chic-valda-tab-diet-ment-eucalipto-3-5g",
+        "source": {
+            "name": "DrogaClara",
+            "url": "https://www.drogaclara.com.br/"
+        }
+    }
+]

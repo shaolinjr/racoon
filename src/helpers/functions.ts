@@ -42,9 +42,15 @@ export function readCSVFromFile(filePath: string, delimiter: string): Promise<an
     });
 }
 
-export function extractNumbersFromString(text: string) {
+export function extractNumbersFromString(text: string): string[] {
     const numbersOnly = new RegExp("[0-9]+", "g")
     return text.match(numbersOnly)
+}
+
+export function extractNumberFromString(text: string): number {
+    const numbersOnly = new RegExp("[0-9]+", "g")
+    const match = numbersOnly.exec(text)
+    return match ? +match[0] : null
 }
 
 export function extractPriceFromString(priceInText: string): number {
@@ -104,4 +110,16 @@ export function extractDurationFromString(text: string): number {
         return parseInt(result.groups.months)
     }
     return null
+}
+/**
+ * Function to apply mixin into Classes to allow multiple class inheritance
+ * @param derivedCtor {any} Name of the class to have multiple inheritance
+ * @param baseCtors {any[]} List of class names to get the implementations from
+ */
+export function applyMixins(derivedCtor: any, baseCtors: any[]) {
+    baseCtors.forEach(baseCtor => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+            Object.defineProperty(derivedCtor.prototype, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name));
+        });
+    });
 }

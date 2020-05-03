@@ -7,15 +7,31 @@ import { MongoClientOptions, MongoClient, Collection, Db } from "mongodb";
 import { WrongSchemaFormatError } from "./errors";
 
 export class CrawlerStorage {
-    private db: Db
-    private client: MongoClient
-    constructor(private uri: string, private dbName: string, private options: MongoClientOptions = null, private modelSchema: any = null) {
+    protected db: Db
+    protected client: MongoClient
+    constructor(private uri: string, private dbName: string, private options: MongoClientOptions = null) {
     }
 
-    public async connectToDB(): Promise<MongoClient> {
+    public getDB() {
+        if (this.db) {
+            return this.db
+        } else {
+            throw new Error("Error. Please check if you connected to the database.")
+        }
+    }
+
+    public getClient() {
+        if (this.client) {
+            return this.client
+        } else {
+            throw new Error("Error. Please check if you connected to the database.")
+        }
+    }
+
+    public connectToDB(): Promise<MongoClient> {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!this.client.isConnected()) {
+                if (!this.client) {
                     const client = await MongoClient.connect(this.uri, this.options)
                     this.client = client
                     this.db = client.db(this.dbName)
@@ -31,22 +47,20 @@ export class CrawlerStorage {
     }
 
     public async closeDBConnection() {
-        return this.client.isConnected() ? this.client.close() : null
+        if (!this.client) { throw new Error("Did you call connectToDB first? The client is undefined.") }
+        if (this.client.isConnected()) {
+            await this.client.close()
+            this.client = null
+            this.db = null
+        }
+        return null
     }
 
     public insertOne(element: any, collection: string): Promise<any> {
-        if (this.modelSchema && typeof this.modelSchema != typeof element) {
-            throw WrongSchemaFormatError()
-        } else {
-            return this.db.collection(collection).insertOne(element)
-        }
+        return this.db.collection(collection).insertOne(element)
     }
 
-    public insertMany(elements: any, collection: string): Promise<any> {
-        if (this.modelSchema && elements.filter((element) => typeof this.modelSchema != typeof element).length) {
-            throw WrongSchemaFormatError()
-        } else {
-            return this.db.collection(collection).insertOne(elements)
-        }
+    public insertMany(elements: any[], collection: string): Promise<any> {
+        return (<Collection>this.db.collection(collection)).insertMany(elements)
     }
 }

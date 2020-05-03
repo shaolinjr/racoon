@@ -5,18 +5,32 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongodb_1 = require("mongodb");
-const errors_1 = require("./errors");
 class CrawlerStorage {
-    constructor(uri, dbName, options = null, modelSchema = null) {
+    constructor(uri, dbName, options = null) {
         this.uri = uri;
         this.dbName = dbName;
         this.options = options;
-        this.modelSchema = modelSchema;
     }
-    async connectToDB() {
+    getDB() {
+        if (this.db) {
+            return this.db;
+        }
+        else {
+            throw new Error("Error. Please check if you connected to the database.");
+        }
+    }
+    getClient() {
+        if (this.client) {
+            return this.client;
+        }
+        else {
+            throw new Error("Error. Please check if you connected to the database.");
+        }
+    }
+    connectToDB() {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!this.client.isConnected()) {
+                if (!this.client) {
                     const client = await mongodb_1.MongoClient.connect(this.uri, this.options);
                     this.client = client;
                     this.db = client.db(this.dbName);
@@ -32,23 +46,21 @@ class CrawlerStorage {
         });
     }
     async closeDBConnection() {
-        return this.client.isConnected() ? this.client.close() : null;
+        if (!this.client) {
+            throw new Error("Did you call connectToDB first? The client is undefined.");
+        }
+        if (this.client.isConnected()) {
+            await this.client.close();
+            this.client = null;
+            this.db = null;
+        }
+        return null;
     }
     insertOne(element, collection) {
-        if (this.modelSchema && typeof this.modelSchema != typeof element) {
-            throw errors_1.WrongSchemaFormatError();
-        }
-        else {
-            return this.db.collection(collection).insertOne(element);
-        }
+        return this.db.collection(collection).insertOne(element);
     }
     insertMany(elements, collection) {
-        if (this.modelSchema && elements.filter((element) => typeof this.modelSchema != typeof element).length) {
-            throw errors_1.WrongSchemaFormatError();
-        }
-        else {
-            return this.db.collection(collection).insertOne(elements);
-        }
+        return this.db.collection(collection).insertMany(elements);
     }
 }
 exports.CrawlerStorage = CrawlerStorage;

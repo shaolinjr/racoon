@@ -54,6 +54,12 @@ function extractNumbersFromString(text) {
     return text.match(numbersOnly);
 }
 exports.extractNumbersFromString = extractNumbersFromString;
+function extractNumberFromString(text) {
+    const numbersOnly = new RegExp("[0-9]+", "g");
+    const match = numbersOnly.exec(text);
+    return match ? +match[0] : null;
+}
+exports.extractNumberFromString = extractNumberFromString;
 function extractPriceFromString(priceInText) {
     // Example: R$ 240,00 até 5 dia(s) antes do início do curso.
     const priceRegex = new RegExp("(?<price>(?:(?:[0-9]{1,3}[.]{1})+[0-9]{3,}|[0-9]+),[0-9]{2})");
@@ -115,3 +121,16 @@ function extractDurationFromString(text) {
     return null;
 }
 exports.extractDurationFromString = extractDurationFromString;
+/**
+ * Function to apply mixin into Classes to allow multiple class inheritance
+ * @param derivedCtor {any} Name of the class to have multiple inheritance
+ * @param baseCtors {any[]} List of class names to get the implementations from
+ */
+function applyMixins(derivedCtor, baseCtors) {
+    baseCtors.forEach(baseCtor => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+            Object.defineProperty(derivedCtor.prototype, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name));
+        });
+    });
+}
+exports.applyMixins = applyMixins;
