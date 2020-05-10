@@ -13,7 +13,7 @@ export declare class CrawlerStorage {
     getDB(): Db;
     getClient(): MongoClient;
     connectToDB(): Promise<MongoClient>;
-    closeDBConnection(): Promise<any>;
+    closeDBConnection(): Promise<boolean>;
     insertOne(element: any, collection: string): Promise<any>;
     insertMany(elements: any[], collection: string): Promise<any>;
 }

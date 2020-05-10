@@ -1,24 +1,38 @@
 import * as axios from 'axios'
+import winston from 'winston'
+import { format } from 'winston'
+import { setupCrawlerLogger } from '../loggers'
 // import { STORAGE_URL, STORAGE_DB } from "../config"
 import * as Helper from '../helpers/functions'
 import { Db, MongoClient } from 'mongodb'
 import { CrawlerStorage } from '../storage'
 import { CrawlerRunOptions, ILink, CrawlerRequestOptions } from '../models'
+import { Inspection } from 'bluebird'
+
 
 global.Promise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default
 
 export class BaseCrawler {
+    public join = Promise.join
+
     protected MIN_REST_TIME = 1000
     protected MAX_RETRY_ATTEMPTS = 3
-    protected join = Promise.join
-
+    protected logger: winston.Logger
     protected BASE_URL = "<this-should-be-overriden>"
     protected STORAGE_URL = "<this-should-be-overriden>"
     protected STORAGE_DB = "<this-should-be-overriden>"
     protected SOURCE: { name: string, url: string } = null
 
-    constructor(private detailsCollection: string = "products", private urlsCollection: string = "urls") { }
+    constructor(public storage: CrawlerStorage, private detailsCollection: string = "products", private urlsCollection: string = "urls") {
+        const loggerName = setupCrawlerLogger()
+        this.logger = winston.loggers.get(loggerName)
+        this.logger.level = 'info'
+        this.logger.format = format.combine(
+            format.colorize(),
+            format.simple()
+        )
+    }
 
     public get source() {
         return this.SOURCE
@@ -27,68 +41,140 @@ export class BaseCrawler {
     private defaultCrawlerOptions: CrawlerRunOptions = {
         extractDetailsOptions: { concurrency: 1, waitFor: this.MIN_REST_TIME },
         extractLinksOptions: { concurrency: 1, waitFor: this.MIN_REST_TIME, linksFromDB: false, dbLinksFilter: {} }
-
     }
 
     private defaultCrawlerRequestOptions: CrawlerRequestOptions = {
         retryCounter: this.MAX_RETRY_ATTEMPTS,
         userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36",
-        retryIn: this.MIN_REST_TIME * 5
+        retryIn: this.MIN_REST_TIME * 5,
+        maxRetries: 3
     }
 
-    public async run(options: CrawlerRunOptions = this.defaultCrawlerOptions): Promise<any> {
-        let { storage, client, scrapingDB } = await this.setupDB()
-
-        // get the links
+    public async runExtractLinks(options: any) {
+        const db = this.storage.getDB()
         let links = []
-        if (options.extractLinksOptions.linksFromDB) {
-            console.log("About to fetch unused links from the db")
-            links = await this.getUnusedLinks(scrapingDB, options.extractLinksOptions.dbLinksFilter)
-        }
-        if (!links.length) {
-            links = await this.extractLinks(options.extractLinksOptions)
-            // console.log("Links: ", links)
-            const formattedLinks: ILink[] = links.map((link: any) => this.formatLink(link, this.BASE_URL))
-            await this.persistLinks(formattedLinks, scrapingDB)
-        }
+        try {
+            if (options.linksFromDB) {
+                this.logger.debug("About to fetch unused links from the db")
+                links = await this.getUnusedLinks(db, options.dbLinksFilter)
+            }
+            if (!links.length) {
+                links = await this.extractLinks(options)
+                // console.log("Links: ", links)
+                const formattedLinks: ILink[] = links.map((link: any) => this.formatLink(link, this.BASE_URL))
+                await this.persistLinks(formattedLinks, db) // broke here timed out connection
+            }
 
-        console.log("Found this amount of links: ", links.length)
+            this.logger.info(`Found this amount of links: ${links.length}`)
+        } catch (error) {
+            this.logger.error("runExtractLinks error: " + JSON.stringify(error))
+        }
+        return links
+    }
 
-        // get the details
+    public async runExtractDetails(options: any, links: ILink[]) {
         let resultDetails = []
+        const db = this.storage.getDB()
         try {
             let detailsCounter = 0
             await Promise.map(links, async (link: any) => { //.slice(lastIndex)
-                console.log("Getting details for: ", link)
+                this.logger.debug(`Getting details for: ${link}`)
                 const details = this.extractDetails(link)
-                const rest = Helper.timeoutPromise(options.extractDetailsOptions.waitFor)
+                const rest = Helper.timeoutPromise(options.waitFor)
                 return this.join(details, rest, async (details: any, rest) => {
                     if (details) {
                         detailsCounter++;
-                        console.log(`Details progress: ${detailsCounter}/${links.length}`)
-                        console.log("Details: ", details)
-                        if (details.hasOwnProperty("length") && details.length || details) {
-                            await this.persistDetails(details, scrapingDB)
+                        this.logger.info(`Details progress: ${detailsCounter}/${links.length}`)
+                        this.logger.debug(`Details: ${JSON.stringify(details)}`)
+                        if (details) {
+                            if (details.hasOwnProperty("length") && details.length || details) {
+                                await this.persistDetails(details, db)
+                                this.logger.info(`Persisted details for: ${link}`)
+                            }
                         }
-                        await scrapingDB.collection(this.urlsCollection).findOneAndUpdate({ url: link, used: false }, { $set: { used: true, usedAt: new Date() } })
+                        await db.collection(this.urlsCollection).updateMany({ url: link, used: false }, { $set: { used: true, usedAt: new Date() } })
+                        this.logger.debug("Updated the urls state to 'used:true' in db.")
                     }
                     return details
-                })
-            }, { concurrency: options.extractDetailsOptions.concurrency })
-                .each((batchResult: any) => {
-                    if (batchResult) {
-                        if (batchResult.hasOwnProperty("length") && batchResult.length) {
-                            resultDetails.push(...batchResult)
-                        } else {
-                            resultDetails.push(batchResult)
+                }).reflect()
+            }, { concurrency: options.concurrency })
+                .each(async (promise: Inspection<any>) => {
+                    if (promise.isFulfilled()) {
+                        const result = promise.value()
+                        if (result) {
+                            if (result.hasOwnProperty("length") && result.length) {
+                                resultDetails.push(...result)
+                            } else {
+                                resultDetails.push(result)
+                            }
                         }
+                    } else {
+                        this.logger.error("runExtractDetails error: " + JSON.stringify(promise.reason()))
                     }
                 })
         } catch (error) {
-            console.log("Shit happened on the concurrency part...: ", error)
+            this.logger.error(`Shit happened on the concurrency part...: ${error}`)
+            throw error
         }
+        return resultDetails
+    }
 
-        await storage.closeDBConnection()
+    public async run(options: CrawlerRunOptions = this.defaultCrawlerOptions): Promise<any> {
+        // let { storage, client, scrapingDB } = await this.setupDB()
+
+        // get the links
+        let links = await this.runExtractLinks(options.extractLinksOptions)
+        // if (options.extractLinksOptions.linksFromDB) {
+        //     this.logger.debug("About to fetch unused links from the db")
+        //     links = await this.getUnusedLinks(scrapingDB, options.extractLinksOptions.dbLinksFilter)
+        // }
+        // if (!links.length) {
+        //     links = await this.extractLinks(options.extractLinksOptions)
+        //     // console.log("Links: ", links)
+        //     const formattedLinks: ILink[] = links.map((link: any) => this.formatLink(link, this.BASE_URL))
+        //     await this.persistLinks(formattedLinks, scrapingDB) // broke here timed out connection
+        // }
+
+        // this.logger.info(`Found this amount of links: ${links.length}`)
+
+
+        // get the details
+        let resultDetails = await this.runExtractDetails(options.extractDetailsOptions, links)
+        // try {
+        //     let detailsCounter = 0
+        //     await Promise.map(links, async (link: any) => { //.slice(lastIndex)
+        //         this.logger.debug(`Getting details for: ${link}`)
+        //         const details = this.extractDetails(link)
+        //         const rest = Helper.timeoutPromise(options.extractDetailsOptions.waitFor)
+        //         return this.join(details, rest, async (details: any, rest) => {
+        //             if (details) {
+        //                 detailsCounter++;
+        //                 this.logger.info(`Details progress: ${detailsCounter}/${links.length}`)
+        //                 this.logger.debug(`Details: ${JSON.stringify(details)}`)
+        //                 if (details.hasOwnProperty("length") && details.length || details) {
+        //                     await this.persistDetails(details, scrapingDB)
+        //                     this.logger.debug(`Persisted details for: ${link}`)
+        //                 }
+        //                 await scrapingDB.collection(this.urlsCollection).updateMany({ url: link, used: false }, { $set: { used: true, usedAt: new Date() } })
+        //                 this.logger.debug("Updated the urls state to 'used:true' in db.")
+        //             }
+        //             return details
+        //         })
+        //     }, { concurrency: options.extractDetailsOptions.concurrency })
+        //         .each((batchResult: any) => {
+        //             if (batchResult) {
+        //                 if (batchResult.hasOwnProperty("length") && batchResult.length) {
+        //                     resultDetails.push(...batchResult)
+        //                 } else {
+        //                     resultDetails.push(batchResult)
+        //                 }
+        //             }
+        //         })
+        // } catch (error) {
+        //     this.logger.error(`Shit happened on the concurrency part...: ${error}`)
+        // }
+
+        // await storage.closeDBConnection()
         return resultDetails
     }
 
@@ -100,13 +186,18 @@ export class BaseCrawler {
             if (data) {
                 return data
             } else {
+                // const child = this.logger.child({ format: format.label({ label: "BaseCrawler > makeRequest" }) })
+                // child.error(`response.data for URL: ${url} was empty`)
                 throw new Error("Response came empty.")
             }
 
         } catch (error) {
+            if (!error.isAxiosError) {
+                throw error
+            }
             console.log("Notifying error on makeRequest: ", error.response.status)
 
-            if (options.retryCounter >= 3 || error.response.status == 404) {
+            if (options.retryCounter >= options.maxRetries || error.response.status == 404) {
                 console.log("Couldn't proceed...: ", url)
                 throw error
             } else {
@@ -128,15 +219,6 @@ export class BaseCrawler {
 
     protected formatLink(link: string, source: string): ILink {
         return { url: link, extractedAt: new Date(), source, used: false }
-    }
-
-    protected async setupDB(): Promise<{ storage: CrawlerStorage, client: MongoClient, scrapingDB: Db }> {
-        console.log(`Setup link: ${this.STORAGE_URL} | ${this.STORAGE_DB}`)
-        const storage = new CrawlerStorage(this.STORAGE_URL, this.STORAGE_DB)
-        const client = await storage.connectToDB()
-        const scrapingDB = storage.getDB()
-
-        return { storage, client, scrapingDB }
     }
 
     protected async persistLinks(links: ILink[], db: Db) {

@@ -51,5 +51,3 @@ class DefaultExporter {
     }
 }
 exports.DefaultExporter = DefaultExporter;
-// const test = new DefaultExporter("./testingProducts.csv")
-// test.parseBaseFile().then(async (result) => await test.exportJSONTofile("./", "testingJSON_export.json", result))

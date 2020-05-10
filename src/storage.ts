@@ -49,9 +49,11 @@ export class CrawlerStorage {
     public async closeDBConnection() {
         if (!this.client) { throw new Error("Did you call connectToDB first? The client is undefined.") }
         if (this.client.isConnected()) {
-            await this.client.close()
+            await this.client.close(true)
             this.client = null
             this.db = null
+            console.log("Closed the connection with the database.")
+            return true
         }
         return null
     }

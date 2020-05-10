@@ -1,0 +1,30 @@
+{"message":"Testing parent logger from setupCrawlerLogger","level":"info","label":"Crawler"}
+{"format":{"options":{"label":"BaseCrawler > makeRequest: "}},"message":"Testing child infor log","level":"info","label":"Crawler"}
+undefined
+undefined
+{ message: 'Testing parent logger from setupCrawlerLogger',
+  level: 'info',
+  label: 'Crawler' }
+{ format: Format { options: { label: 'BaseCrawler > makeRequest: ' } },
+  message: 'Testing child infor log',
+  level: 'info',
+  label: 'Crawler' }
+info: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+info: Testing child infor log {"format":{"options":{"label":"BaseCrawler > makeRequest: "}},"label":"Crawler"}
+info: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+info: Testing child infor log {"format":{"options":{}},"label":"Crawler"}
+info: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+info: Testing child infor log {"format":{"options":{}},"label":"Crawler"}
+info: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+info: Testing child infor log {"format":{"options":{}},"label":"Crawler"}
+info: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+info: Testing child infor log {"format":{"options":{}},"label":"Crawler"}
+[32minfo[39m: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+[32minfo[39m: Testing child infor log {"format":{"options":{}},"label":"Crawler"}
+[32minfo[39m: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+[32minfo[39m: Testing child infor log {"label":"Crawler"}
+[32minfo[39m: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+[32minfo[39m: Testing child infor log {"format":{"options":{}},"label":"Crawler"}
+[32minfo[39m: Testing parent logger from setupCrawlerLogger {"label":"Crawler"}
+[32minfo[39m: Testing child infor log {"format":{"options":{}},"label":"Crawler"}
+[32minfo[39m: Testing child infor log {"format":{"options":{}},"label":"Crawler"}
