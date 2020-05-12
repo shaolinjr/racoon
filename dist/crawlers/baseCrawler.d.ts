@@ -2,7 +2,7 @@
 import winston from 'winston';
 import { Db } from 'mongodb';
 import { CrawlerStorage } from '../storage';
-import { CrawlerRunOptions, ILink, CrawlerRequestOptions } from '../models';
+import { CrawlerRunOptions, ILink, CrawlerRequestOptions, ExtractDetailsOptions, ExtractLinksOptions } from '../models';
 export declare class BaseCrawler {
     storage: CrawlerStorage;
     private detailsCollection;
@@ -25,14 +25,14 @@ export declare class BaseCrawler {
     };
     private defaultCrawlerOptions;
     private defaultCrawlerRequestOptions;
-    runExtractLinks(options: any): Promise<any[]>;
-    runExtractDetails(options: any, links: ILink[]): Promise<any[]>;
+    runExtractLinks(options?: ExtractLinksOptions): Promise<any[]>;
+    runExtractDetails(links: ILink[], options?: ExtractDetailsOptions): Promise<any[]>;
     run(options?: CrawlerRunOptions): Promise<any>;
     protected makeRequest(url: string, options?: CrawlerRequestOptions): any;
     protected extractLinks(options?: any): Promise<string[] | any[]>;
-    protected extractDetails(url: string | any): Promise<any[] | any | null>;
+    protected extractDetails(url: string | any, ...params: any[]): Promise<any[] | any | null>;
     protected formatLink(link: string, source: string): ILink;
-    protected persistLinks(links: ILink[], db: Db): Promise<import("mongodb").BulkWriteResult>;
+    protected persistLinks(links: ILink[], db: Db): Promise<void>;
     protected persistDetails(details: any[] | any, db: Db): Promise<import("mongodb").InsertOneWriteOpResult<any> | import("mongodb").InsertWriteOpResult<any>>;
     protected getUnusedLinks(db: Db, filter?: any, detailed?: boolean): Promise<any[]>;
     protected useLink(db: Db, url: string): Promise<import("mongodb").FindAndModifyWriteOpResultObject<any>>;

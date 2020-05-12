@@ -6,14 +6,27 @@ import { setupCrawlerLogger } from '../loggers'
 import * as Helper from '../helpers/functions'
 import { Db, MongoClient } from 'mongodb'
 import { CrawlerStorage } from '../storage'
-import { CrawlerRunOptions, ILink, CrawlerRequestOptions } from '../models'
+import { CrawlerRunOptions, ILink, CrawlerRequestOptions, ExtractDetailsOptions, ExtractLinksOptions } from '../models'
 import { Inspection } from 'bluebird'
 
 
 global.Promise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default
 
-export class BaseCrawler {
+// export abstract class Crawler {
+//     protected MIN_REST_TIME: number
+//     protected MAX_RETRY_ATTEMPTS: number
+//     protected BASE_URL: string
+//     protected STORAGE_URL: string
+//     protected STORAGE_DB: string
+//     protected SOURCE: { name: string, url: string }
+
+//     protected async abstract extractLinks(options?: any): Promise<string[] | any[]>
+//     protected async abstract extractDetails(url: string | any): Promise<any[] | any | null>
+//     constructor(public storage: CrawlerStorage) { }
+// }
+
+export class BaseCrawler { // extends Crawler 
     public join = Promise.join
 
     protected MIN_REST_TIME = 1000
@@ -50,7 +63,7 @@ export class BaseCrawler {
         maxRetries: 3
     }
 
-    public async runExtractLinks(options: any) {
+    public async runExtractLinks(options: ExtractLinksOptions = this.defaultCrawlerOptions.extractLinksOptions) {
         const db = this.storage.getDB()
         let links = []
         try {
@@ -60,19 +73,21 @@ export class BaseCrawler {
             }
             if (!links.length) {
                 links = await this.extractLinks(options)
-                // console.log("Links: ", links)
+                // console.log("XLinks: ", links)
                 const formattedLinks: ILink[] = links.map((link: any) => this.formatLink(link, this.BASE_URL))
+                this.logger.debug("About to start persisting the links!")
                 await this.persistLinks(formattedLinks, db) // broke here timed out connection
             }
 
             this.logger.info(`Found this amount of links: ${links.length}`)
         } catch (error) {
             this.logger.error("runExtractLinks error: " + JSON.stringify(error))
+            throw error
         }
         return links
     }
 
-    public async runExtractDetails(options: any, links: ILink[]) {
+    public async runExtractDetails(links: ILink[], options: ExtractDetailsOptions = this.defaultCrawlerOptions.extractDetailsOptions) {
         let resultDetails = []
         const db = this.storage.getDB()
         try {
@@ -137,9 +152,8 @@ export class BaseCrawler {
 
         // this.logger.info(`Found this amount of links: ${links.length}`)
 
-
         // get the details
-        let resultDetails = await this.runExtractDetails(options.extractDetailsOptions, links)
+        let resultDetails = await this.runExtractDetails(links, options.extractDetailsOptions)
         // try {
         //     let detailsCounter = 0
         //     await Promise.map(links, async (link: any) => { //.slice(lastIndex)
@@ -180,8 +194,12 @@ export class BaseCrawler {
 
     protected async makeRequest(url: string, options: CrawlerRequestOptions = this.defaultCrawlerRequestOptions) {
         try {
-            const response = await Axios.get(url, { headers: { 'User-Agent': options.userAgent } })
+            let requestConfig: axios.AxiosRequestConfig = {}
 
+            requestConfig = { ...options.axiosOptions }
+            requestConfig.headers = { ...(options.axiosOptions || {}).headers, 'User-Agent': options.userAgent }
+
+            const response = await Axios.get(url, requestConfig) //url, { headers: { 'User-Agent': options.userAgent } }
             const data = response.data
             if (data) {
                 return data
@@ -195,16 +213,20 @@ export class BaseCrawler {
             if (!error.isAxiosError) {
                 throw error
             }
-            console.log("Notifying error on makeRequest: ", error.response.status)
+            if (error.response) {
+                console.log("Notifying error on makeRequest: ", error.response.status)
 
-            if (options.retryCounter >= options.maxRetries || error.response.status == 404) {
-                console.log("Couldn't proceed...: ", url)
-                throw error
+                if (options.retryCounter >= options.maxRetries || error.response.status == 404) {
+                    console.log("Couldn't proceed...: ", url)
+                    throw error
+                } else {
+                    await Helper.timeoutPromise(options.retryIn) // resting for a while and then returning something
+                    console.log("Requesting again!: ", url)
+                    options.retryCounter++
+                    return await this.makeRequest(url, options)
+                }
             } else {
-                await Helper.timeoutPromise(options.retryIn) // resting for a while and then returning something
-                console.log("Requesting again!: ", url)
-                options.retryCounter++
-                return await this.makeRequest(url, options)
+                throw error
             }
         }
     }
@@ -213,7 +235,7 @@ export class BaseCrawler {
         throw new Error("The method extractLinks should be overriden by your class")
     }
 
-    protected async extractDetails(url: string | any): Promise<any[] | any | null> {
+    protected async extractDetails(url: string | any, ...params: any[]): Promise<any[] | any | null> {
         throw new Error("The method extractDetails should be overriden by your class")
     }
 
@@ -222,14 +244,20 @@ export class BaseCrawler {
     }
 
     protected async persistLinks(links: ILink[], db: Db) {
-        const bulk = db.collection(this.urlsCollection).initializeUnorderedBulkOp()
+        if (links.length) {
+            let counter = 0
+            const bulk = db.collection(this.urlsCollection).initializeUnorderedBulkOp()
 
-        links.forEach((link) => {
-            // const formattedLink: ILink = { url: link, extractedAt: new Date(), source: this.BASE_URL, used: false }
-            bulk.find({ url: link, used: false }).upsert().updateOne(link)
-        })
+            links.forEach((link) => {
+                // const formattedLink: ILink = { url: link, extractedAt: new Date(), source: this.BASE_URL, used: false }
+                counter++
+                bulk.find({ url: link, used: false }).upsert().updateOne(link)
+            })
 
-        return bulk.execute()
+            return bulk.execute().then(() => {
+                this.logger.debug(`Persisted ${counter} links to the database!`)
+            })
+        }
     }
 
     protected async persistDetails(details: any[] | any, db: Db) {
@@ -244,9 +272,14 @@ export class BaseCrawler {
 
     protected async getUnusedLinks(db: Db, filter?: any, detailed: boolean = false) {
         const queryFilter = filter ? { ...filter, used: false } : { used: false }
-
+        let unique = new Set()
         if (detailed) {
-            return db.collection(this.urlsCollection).find(queryFilter).toArray()
+            return (await db.collection(this.urlsCollection).find(queryFilter).toArray()).filter((link) => {
+                if (!unique.has(link.url)) {
+                    unique.add(link.url)
+                    return true
+                }
+            })
         } else {
             return [].concat(await db.collection(this.urlsCollection).distinct("url", queryFilter))
         }

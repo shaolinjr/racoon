@@ -18,6 +18,17 @@ const loggers_1 = require("../loggers");
 const Helper = __importStar(require("../helpers/functions"));
 global.Promise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default;
+// export abstract class Crawler {
+//     protected MIN_REST_TIME: number
+//     protected MAX_RETRY_ATTEMPTS: number
+//     protected BASE_URL: string
+//     protected STORAGE_URL: string
+//     protected STORAGE_DB: string
+//     protected SOURCE: { name: string, url: string }
+//     protected async abstract extractLinks(options?: any): Promise<string[] | any[]>
+//     protected async abstract extractDetails(url: string | any): Promise<any[] | any | null>
+//     constructor(public storage: CrawlerStorage) { }
+// }
 class BaseCrawler {
     constructor(storage, detailsCollection = "products", urlsCollection = "urls") {
         this.storage = storage;
@@ -48,7 +59,7 @@ class BaseCrawler {
     get source() {
         return this.SOURCE;
     }
-    async runExtractLinks(options) {
+    async runExtractLinks(options = this.defaultCrawlerOptions.extractLinksOptions) {
         const db = this.storage.getDB();
         let links = [];
         try {
@@ -58,18 +69,20 @@ class BaseCrawler {
             }
             if (!links.length) {
                 links = await this.extractLinks(options);
-                // console.log("Links: ", links)
+                // console.log("XLinks: ", links)
                 const formattedLinks = links.map((link) => this.formatLink(link, this.BASE_URL));
+                this.logger.debug("About to start persisting the links!");
                 await this.persistLinks(formattedLinks, db); // broke here timed out connection
             }
             this.logger.info(`Found this amount of links: ${links.length}`);
         }
         catch (error) {
             this.logger.error("runExtractLinks error: " + JSON.stringify(error));
+            throw error;
         }
         return links;
     }
-    async runExtractDetails(options, links) {
+    async runExtractDetails(links, options = this.defaultCrawlerOptions.extractDetailsOptions) {
         let resultDetails = [];
         const db = this.storage.getDB();
         try {
@@ -134,7 +147,7 @@ class BaseCrawler {
         // }
         // this.logger.info(`Found this amount of links: ${links.length}`)
         // get the details
-        let resultDetails = await this.runExtractDetails(options.extractDetailsOptions, links);
+        let resultDetails = await this.runExtractDetails(links, options.extractDetailsOptions);
         // try {
         //     let detailsCounter = 0
         //     await Promise.map(links, async (link: any) => { //.slice(lastIndex)
@@ -173,7 +186,10 @@ class BaseCrawler {
     }
     async makeRequest(url, options = this.defaultCrawlerRequestOptions) {
         try {
-            const response = await Axios.get(url, { headers: { 'User-Agent': options.userAgent } });
+            let requestConfig = {};
+            requestConfig = { ...options.axiosOptions };
+            requestConfig.headers = { ...(options.axiosOptions || {}).headers, 'User-Agent': options.userAgent };
+            const response = await Axios.get(url, requestConfig); //url, { headers: { 'User-Agent': options.userAgent } }
             const data = response.data;
             if (data) {
                 return data;
@@ -188,35 +204,46 @@ class BaseCrawler {
             if (!error.isAxiosError) {
                 throw error;
             }
-            console.log("Notifying error on makeRequest: ", error.response.status);
-            if (options.retryCounter >= options.maxRetries || error.response.status == 404) {
-                console.log("Couldn't proceed...: ", url);
-                throw error;
+            if (error.response) {
+                console.log("Notifying error on makeRequest: ", error.response.status);
+                if (options.retryCounter >= options.maxRetries || error.response.status == 404) {
+                    console.log("Couldn't proceed...: ", url);
+                    throw error;
+                }
+                else {
+                    await Helper.timeoutPromise(options.retryIn); // resting for a while and then returning something
+                    console.log("Requesting again!: ", url);
+                    options.retryCounter++;
+                    return await this.makeRequest(url, options);
+                }
             }
             else {
-                await Helper.timeoutPromise(options.retryIn); // resting for a while and then returning something
-                console.log("Requesting again!: ", url);
-                options.retryCounter++;
-                return await this.makeRequest(url, options);
+                throw error;
             }
         }
     }
     async extractLinks(options) {
         throw new Error("The method extractLinks should be overriden by your class");
     }
-    async extractDetails(url) {
+    async extractDetails(url, ...params) {
         throw new Error("The method extractDetails should be overriden by your class");
     }
     formatLink(link, source) {
         return { url: link, extractedAt: new Date(), source, used: false };
     }
     async persistLinks(links, db) {
-        const bulk = db.collection(this.urlsCollection).initializeUnorderedBulkOp();
-        links.forEach((link) => {
-            // const formattedLink: ILink = { url: link, extractedAt: new Date(), source: this.BASE_URL, used: false }
-            bulk.find({ url: link, used: false }).upsert().updateOne(link);
-        });
-        return bulk.execute();
+        if (links.length) {
+            let counter = 0;
+            const bulk = db.collection(this.urlsCollection).initializeUnorderedBulkOp();
+            links.forEach((link) => {
+                // const formattedLink: ILink = { url: link, extractedAt: new Date(), source: this.BASE_URL, used: false }
+                counter++;
+                bulk.find({ url: link, used: false }).upsert().updateOne(link);
+            });
+            return bulk.execute().then(() => {
+                this.logger.debug(`Persisted ${counter} links to the database!`);
+            });
+        }
     }
     async persistDetails(details, db) {
         if (!details.hasOwnProperty("length")) {
@@ -230,8 +257,14 @@ class BaseCrawler {
     }
     async getUnusedLinks(db, filter, detailed = false) {
         const queryFilter = filter ? { ...filter, used: false } : { used: false };
+        let unique = new Set();
         if (detailed) {
-            return db.collection(this.urlsCollection).find(queryFilter).toArray();
+            return (await db.collection(this.urlsCollection).find(queryFilter).toArray()).filter((link) => {
+                if (!unique.has(link.url)) {
+                    unique.add(link.url);
+                    return true;
+                }
+            });
         }
         else {
             return [].concat(await db.collection(this.urlsCollection).distinct("url", queryFilter));

@@ -97,7 +97,6 @@ async function autoScroll(page, distanceToScroll, speed) {
     }, speed, distanceToScroll);
 }
 exports.autoScroll = autoScroll;
-// This function can be in the rakoon helper
 function extractHoursAmountFromString(text) {
     // 440 h – 12 meses
     // 12 meses - 400h
@@ -109,7 +108,6 @@ function extractHoursAmountFromString(text) {
     return null;
 }
 exports.extractHoursAmountFromString = extractHoursAmountFromString;
-// This function can be in the rakoon helper
 function extractDurationFromString(text) {
     // 440 h – 12 meses
     // 12 meses - 400h
