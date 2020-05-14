@@ -14,7 +14,6 @@ const axios = __importStar(require("axios"));
 const winston_1 = __importDefault(require("winston"));
 const winston_2 = require("winston");
 const loggers_1 = require("../loggers");
-// import { STORAGE_URL, STORAGE_DB } from "../config"
 const Helper = __importStar(require("../helpers/functions"));
 global.Promise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default;

@@ -1,20 +1,9 @@
+import { RakoonS3Config } from '../models/s3Config.model';
 export declare class S3 {
     private config;
     private S3Client;
-    constructor(config: {
-        bucketName: string;
-        endpoint?: string;
-        accessKey: string;
-        secretAccessKey: string;
-        region: string;
-    });
-    getConfig(): {
-        bucketName: string;
-        endpoint?: string;
-        accessKey: string;
-        secretAccessKey: string;
-        region: string;
-    };
+    constructor(config: RakoonS3Config);
+    getConfig(): RakoonS3Config;
     getBucketURL(): void;
     sendToS3(options?: {
         filePath?: string;

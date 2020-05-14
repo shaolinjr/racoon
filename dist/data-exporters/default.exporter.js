@@ -12,7 +12,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const json2csv = __importStar(require("json2csv"));
+const json2csv_1 = require("json2csv");
 const fs = __importStar(require("fs"));
+const fs_1 = require("fs");
 const fileExtensions_constants_1 = require("../constants/fileExtensions.constants");
 const file_1 = require("../helpers/file");
 class DefaultExporter {
@@ -36,6 +38,32 @@ class DefaultExporter {
         }
         options.transforms = [].concat(options.transforms || [], [this.flatten]);
         return json2csv.parse(data, options);
+    }
+    /**
+     * Method to perform the conversion from JSON to CSV in an async fashion. Takes advantage of the Streaming API.
+     * @param {boolean} [returnCSV=false] Flag that states wether the resulting CSV should be returned from the method call
+     * @param {string} [folderPath] The path to the destination folder of the new file
+     * @param {string} [filename] The name that will be given to the new file
+     * @param {son2csv.default.Options} [options] Object options to customize the execution of the parse (this is internal stuff of json2csv)
+     */
+    async $convertJSONToCSV(returnCSV = false, folderPath, filename, options = {}) {
+        if (!returnCSV && (!folderPath || !filename)) {
+            throw new Error("If you choose not to return the CSV in memory you must pass a folderPath and filename as parameter");
+        }
+        const opts = { ...options } || {};
+        opts.transforms = [].concat(options.transforms || [], [this.flatten]);
+        console.log("OPTS: ", opts);
+        const transformOptions = { highWaterMark: 6144, encoding: "utf-8" }; // 6GB WATERMARK
+        const input = fs_1.createReadStream(this.baseFilePath, { encoding: "utf-8" });
+        const asyncParser = new json2csv_1.AsyncParser(opts, transformOptions);
+        if (!returnCSV) {
+            // const jsonTransform = new json2csv.Transform(opts, transformOptions)
+            const output = fs_1.createWriteStream(`${folderPath}/${filename}`, { encoding: "utf-8" });
+            return asyncParser.fromInput(input).toOutput(output).promise(returnCSV);
+        }
+        else {
+            return asyncParser.fromInput(input).promise(returnCSV);
+        }
     }
     exportCSVToFile(folderPath, filename, textContent) {
         return new Promise((resolve, reject) => {

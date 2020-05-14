@@ -1,9 +1,11 @@
 import * as fs from 'fs'
 import * as AWS from 'aws-sdk'
+import { S3Config } from 'aws-sdk/clients/datasync'
+import { RakoonS3Config } from '../models/s3Config.model'
 
 export class S3 {
     private S3Client: AWS.S3
-    constructor(private config: { bucketName: string, endpoint?: string, accessKey: string, secretAccessKey: string, region: string }) {
+    constructor(private config: RakoonS3Config) {
         this.S3Client = new AWS.S3({ accessKeyId: config.accessKey, secretAccessKey: config.secretAccessKey, region: config.region })
     }
 

@@ -2,7 +2,6 @@ import * as axios from 'axios'
 import winston from 'winston'
 import { format } from 'winston'
 import { setupCrawlerLogger } from '../loggers'
-// import { STORAGE_URL, STORAGE_DB } from "../config"
 import * as Helper from '../helpers/functions'
 import { Db, MongoClient } from 'mongodb'
 import { CrawlerStorage } from '../storage'
