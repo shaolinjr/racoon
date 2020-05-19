@@ -1,10 +1,22 @@
-# Rakoon
-Swift, Precise and Furtive Web Scraping Library
+---
+description: >-
+  O intuito desta documentação é demonstrar as possibilidades de criação de
+  Crawlers através da biblioteca.
+---
 
-<p align="center">
-<img src="assets/images/rakoon2-hr.png" width="65%" alt=/>
-</p>
+# Introdução
+
+## Instalação
+
+O processo de instalação é bem simples
+
+```
+$ npm install rakoon@latest
+```
+
+{% hint style="info" %}
+ Super-powers are granted randomly so please submit an issue if you're not happy with yours.
+{% endhint %}
 
 
 
-# This is an extremely early-stage library, don't clone/fork/ this just yet!!
