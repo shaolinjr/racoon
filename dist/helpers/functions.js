@@ -63,12 +63,22 @@ exports.extractNumberFromString = extractNumberFromString;
 function extractPriceFromString(priceInText) {
     // Example: R$ 240,00 até 5 dia(s) antes do início do curso.
     const priceRegex = new RegExp("(?<price>(?:(?:[0-9]{1,3}[.]{1})+[0-9]{3,}|[0-9]+),[0-9]{2})");
+    const usaPriceRegex = new RegExp("(?<price>(?:(?:[0-9]{1,3}[,]{1})+[0-9]{3,}|[0-9]+).[0-9]{2})");
     const match = priceInText.match(priceRegex);
     if (match) {
-        const price = priceRegex.exec(priceInText).groups.price;
-        return parseInt(price.replace(/[,.]/g, "")) / 100;
+        const price = (priceRegex.exec(priceInText) || { groups: null }).groups;
+        if (price) {
+            return parseInt((price.price || "").replace(/[,.]/g, "")) / 100;
+        }
     }
     else {
+        const usaMatch = priceInText.match(usaPriceRegex);
+        if (usaMatch) {
+            const price = (usaPriceRegex.exec(priceInText) || { groups: null }).groups;
+            if (price) {
+                return parseInt((price.price || "").replace(/[,.]/g, "")) / 100;
+            }
+        }
         return null;
     }
 }

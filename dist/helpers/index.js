@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var functions_1 = require("./functions");
 exports.createGTINWithZeros = functions_1.createGTINWithZeros;
 exports.extractNumbersFromString = functions_1.extractNumbersFromString;
+exports.extractNumberFromString = functions_1.extractNumberFromString;
 exports.extractPriceFromString = functions_1.extractPriceFromString;
 exports.readCSVFromFile = functions_1.readCSVFromFile;
 exports.removeExtraSlashesFromUrl = functions_1.removeExtraSlashesFromUrl;

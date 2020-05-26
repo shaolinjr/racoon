@@ -6,7 +6,7 @@ export declare function stripLeftZerosFromGTIN(ean: string): string;
 export declare function readCSVFromFile(filePath: string, delimiter: string): Promise<any>;
 export declare function extractNumbersFromString(text: string): string[];
 export declare function extractNumberFromString(text: string): number;
-export declare function extractPriceFromString(priceInText: string): number;
+export declare function extractPriceFromString(priceInText: string): number | null;
 /**
  * This function will trigger a automatic scroll on the page and will stop when it reaches the bottom
  * @param page {puppeteer.Page} Puppeteer Page instance

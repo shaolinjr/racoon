@@ -1,6 +1,7 @@
 export {
     createGTINWithZeros,
     extractNumbersFromString,
+    extractNumberFromString,
     extractPriceFromString,
     readCSVFromFile,
     removeExtraSlashesFromUrl,
