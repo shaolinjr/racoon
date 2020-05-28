@@ -4,5 +4,5 @@ export interface CrawlerRequestOptions {
     userAgent: string;
     retryIn: number;
     maxRetries: number;
-    axiosOptions?: AxiosRequestConfig;
+    axiosOptions?: AxiosRequestConfig | any;
 }
