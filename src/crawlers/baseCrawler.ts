@@ -7,7 +7,8 @@ import { Db, MongoClient } from 'mongodb'
 import { CrawlerStorage } from '../storage'
 import { CrawlerRunOptions, ILink, CrawlerRequestOptions, ExtractDetailsOptions, ExtractLinksOptions } from '../models'
 import { Inspection } from 'bluebird'
-
+import { EventEmitter } from 'events'
+import { BaseCrawlerEvents } from '../events'
 
 global.Promise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default
@@ -35,6 +36,8 @@ export class BaseCrawler { // extends Crawler
     protected STORAGE_URL = "<this-should-be-overriden>"
     protected STORAGE_DB = "<this-should-be-overriden>"
     protected SOURCE: { name: string, url: string } = null
+
+    public events = BaseCrawlerEvents
 
     constructor(public storage: CrawlerStorage, private detailsCollection: string = "products", private urlsCollection: string = "urls") {
         const loggerName = setupCrawlerLogger()
@@ -69,6 +72,7 @@ export class BaseCrawler { // extends Crawler
             if (options.linksFromDB) {
                 this.logger.debug("About to fetch unused links from the db")
                 links = await this.getUnusedLinks(db, options.dbLinksFilter)
+                this.logger.debug(`Found ${links.length} links in DB`)
             }
             if (!links.length) {
                 links = await this.extractLinks(options)
@@ -83,6 +87,7 @@ export class BaseCrawler { // extends Crawler
             this.logger.error("runExtractLinks error: " + JSON.stringify(error))
             throw error
         }
+        BaseCrawlerEvents.emit("extractLinks:finished")
         return links
     }
 
@@ -130,6 +135,7 @@ export class BaseCrawler { // extends Crawler
             this.logger.error(`Shit happened on the concurrency part...: ${error}`)
             throw error
         }
+        BaseCrawlerEvents.emit("extractDetails:finished")
         return resultDetails
     }
 
@@ -188,17 +194,19 @@ export class BaseCrawler { // extends Crawler
         // }
 
         // await storage.closeDBConnection()
+        BaseCrawlerEvents.emit("finishedRun")
         return resultDetails
     }
 
-    protected async makeRequest(url: string, options: CrawlerRequestOptions = this.defaultCrawlerRequestOptions) {
+    protected async makeRequest(url: string, options?: CrawlerRequestOptions) {
         try {
-            let requestConfig: axios.AxiosRequestConfig = {}
+            options = { ...this.defaultCrawlerRequestOptions, ...options }
 
+            let requestConfig: axios.AxiosRequestConfig = { method: "GET" }
             requestConfig = { ...options.axiosOptions }
             requestConfig.headers = { ...(options.axiosOptions || {}).headers, 'User-Agent': options.userAgent }
 
-            const response = await Axios.get(url, requestConfig) //url, { headers: { 'User-Agent': options.userAgent } }
+            const response = await Axios.request({ url, ...requestConfig }) //url, { headers: { 'User-Agent': options.userAgent } }
             const data = response.data
             if (data) {
                 return data
@@ -271,12 +279,15 @@ export class BaseCrawler { // extends Crawler
 
     protected async getUnusedLinks(db: Db, filter?: any, detailed: boolean = false) {
         const queryFilter = filter ? { ...filter, used: false } : { used: false }
+        console.log("QUERY FILTER: ", queryFilter)
         let unique = new Set()
         if (detailed) {
             return (await db.collection(this.urlsCollection).find(queryFilter).toArray()).filter((link) => {
                 if (!unique.has(link.url)) {
                     unique.add(link.url)
                     return true
+                } else {
+                    return false
                 }
             })
         } else {

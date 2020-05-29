@@ -18,6 +18,7 @@ export declare class BaseCrawler {
         name: string;
         url: string;
     };
+    events: import("../events/base-crawler.events").BaseCrawlerEmitter;
     constructor(storage: CrawlerStorage, detailsCollection?: string, urlsCollection?: string);
     get source(): {
         name: string;

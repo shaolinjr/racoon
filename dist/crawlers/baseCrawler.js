@@ -15,6 +15,7 @@ const winston_1 = __importDefault(require("winston"));
 const winston_2 = require("winston");
 const loggers_1 = require("../loggers");
 const Helper = __importStar(require("../helpers/functions"));
+const events_1 = require("../events");
 global.Promise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default;
 // export abstract class Crawler {
@@ -40,6 +41,7 @@ class BaseCrawler {
         this.STORAGE_URL = "<this-should-be-overriden>";
         this.STORAGE_DB = "<this-should-be-overriden>";
         this.SOURCE = null;
+        this.events = events_1.BaseCrawlerEvents;
         this.defaultCrawlerOptions = {
             extractDetailsOptions: { concurrency: 1, waitFor: this.MIN_REST_TIME },
             extractLinksOptions: { concurrency: 1, waitFor: this.MIN_REST_TIME, linksFromDB: false, dbLinksFilter: {} }
@@ -65,6 +67,7 @@ class BaseCrawler {
             if (options.linksFromDB) {
                 this.logger.debug("About to fetch unused links from the db");
                 links = await this.getUnusedLinks(db, options.dbLinksFilter);
+                this.logger.debug(`Found ${links.length} links in DB`);
             }
             if (!links.length) {
                 links = await this.extractLinks(options);
@@ -79,6 +82,7 @@ class BaseCrawler {
             this.logger.error("runExtractLinks error: " + JSON.stringify(error));
             throw error;
         }
+        events_1.BaseCrawlerEvents.emit("extractLinks:finished");
         return links;
     }
     async runExtractDetails(links, options = this.defaultCrawlerOptions.extractDetailsOptions) {
@@ -128,6 +132,7 @@ class BaseCrawler {
             this.logger.error(`Shit happened on the concurrency part...: ${error}`);
             throw error;
         }
+        events_1.BaseCrawlerEvents.emit("extractDetails:finished");
         return resultDetails;
     }
     async run(options = this.defaultCrawlerOptions) {
@@ -181,14 +186,16 @@ class BaseCrawler {
         //     this.logger.error(`Shit happened on the concurrency part...: ${error}`)
         // }
         // await storage.closeDBConnection()
+        events_1.BaseCrawlerEvents.emit("finishedRun");
         return resultDetails;
     }
-    async makeRequest(url, options = this.defaultCrawlerRequestOptions) {
+    async makeRequest(url, options) {
         try {
-            let requestConfig = {};
+            options = { ...this.defaultCrawlerRequestOptions, ...options };
+            let requestConfig = { method: "GET" };
             requestConfig = { ...options.axiosOptions };
             requestConfig.headers = { ...(options.axiosOptions || {}).headers, 'User-Agent': options.userAgent };
-            const response = await Axios.get(url, requestConfig); //url, { headers: { 'User-Agent': options.userAgent } }
+            const response = await Axios.request({ url, ...requestConfig }); //url, { headers: { 'User-Agent': options.userAgent } }
             const data = response.data;
             if (data) {
                 return data;
@@ -256,12 +263,16 @@ class BaseCrawler {
     }
     async getUnusedLinks(db, filter, detailed = false) {
         const queryFilter = filter ? { ...filter, used: false } : { used: false };
+        console.log("QUERY FILTER: ", queryFilter);
         let unique = new Set();
         if (detailed) {
             return (await db.collection(this.urlsCollection).find(queryFilter).toArray()).filter((link) => {
                 if (!unique.has(link.url)) {
                     unique.add(link.url);
                     return true;
+                }
+                else {
+                    return false;
                 }
             });
         }
