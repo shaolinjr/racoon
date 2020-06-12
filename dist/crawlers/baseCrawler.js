@@ -16,6 +16,7 @@ const winston_2 = require("winston");
 const loggers_1 = require("../loggers");
 const Helper = __importStar(require("../helpers/functions"));
 const events_1 = require("../events");
+const errors_1 = require("../errors");
 global.Promise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default;
 // export abstract class Crawler {
@@ -203,7 +204,8 @@ class BaseCrawler {
             else {
                 // const child = this.logger.child({ format: format.label({ label: "BaseCrawler > makeRequest" }) })
                 // child.error(`response.data for URL: ${url} was empty`)
-                throw new Error("Response came empty.");
+                throw new errors_1.EmptyResponseError(`The URL: ${url} response was empty content.`);
+                // throw new Error("Response came empty.")
             }
         }
         catch (error) {

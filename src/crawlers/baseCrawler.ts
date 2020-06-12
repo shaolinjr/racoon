@@ -9,6 +9,7 @@ import { CrawlerRunOptions, ILink, CrawlerRequestOptions, ExtractDetailsOptions,
 import { Inspection } from 'bluebird'
 import { EventEmitter } from 'events'
 import { BaseCrawlerEvents } from '../events'
+import { EmptyResponseError } from '../errors'
 
 global.Promise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default
@@ -213,7 +214,8 @@ export class BaseCrawler { // extends Crawler
             } else {
                 // const child = this.logger.child({ format: format.label({ label: "BaseCrawler > makeRequest" }) })
                 // child.error(`response.data for URL: ${url} was empty`)
-                throw new Error("Response came empty.")
+                throw new EmptyResponseError(`The URL: ${url} response was empty content.`)
+                // throw new Error("Response came empty.")
             }
 
         } catch (error) {

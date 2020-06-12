@@ -46,7 +46,7 @@ export class DefaultExporter {
         }
         const opts: json2csv.default.Options<any> = { ...options } || {}
         opts.transforms = [].concat(options.transforms || [], [this.flatten])
-        console.log("OPTS: ", opts)
+        // console.log("OPTS: ", opts)
         const transformOptions = { highWaterMark: 6144, encoding: "utf-8" } // 6GB WATERMARK
         const input = createReadStream(this.baseFilePath, { encoding: "utf-8" })
         const asyncParser = new AsyncParser(opts, transformOptions)

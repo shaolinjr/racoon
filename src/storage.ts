@@ -4,7 +4,6 @@
  */
 
 import { MongoClientOptions, MongoClient, Collection, Db } from "mongodb";
-import { WrongSchemaFormatError } from "./errors";
 
 export class CrawlerStorage {
     protected db: Db

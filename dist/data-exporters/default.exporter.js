@@ -52,7 +52,7 @@ class DefaultExporter {
         }
         const opts = { ...options } || {};
         opts.transforms = [].concat(options.transforms || [], [this.flatten]);
-        console.log("OPTS: ", opts);
+        // console.log("OPTS: ", opts)
         const transformOptions = { highWaterMark: 6144, encoding: "utf-8" }; // 6GB WATERMARK
         const input = fs_1.createReadStream(this.baseFilePath, { encoding: "utf-8" });
         const asyncParser = new json2csv_1.AsyncParser(opts, transformOptions);
