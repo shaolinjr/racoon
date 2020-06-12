@@ -1,6 +1,6 @@
 {
   "name": "rakoon",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Swift, Precise and Furtive Web Scraping Library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
