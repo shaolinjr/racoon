@@ -66,7 +66,7 @@ export class BaseCrawler { // extends Crawler
         maxRetries: 3
     }
 
-    public async runExtractLinks(options: ExtractLinksOptions = this.defaultCrawlerOptions.extractLinksOptions) {
+    public async runExtractLinks(options: ExtractLinksOptions = this.defaultCrawlerOptions.extractLinksOptions): Promise<ILink[]> {
         const db = this.storage.getDB()
         let links = []
         try {
@@ -260,7 +260,7 @@ export class BaseCrawler { // extends Crawler
             links.forEach((link) => {
                 // const formattedLink: ILink = { url: link, extractedAt: new Date(), source: this.BASE_URL, used: false }
                 counter++
-                bulk.find({ url: link, used: false }).upsert().updateOne(link)
+                bulk.find({ url: link, used: false }).upsert().updateOne({ $set: link })
             })
 
             return bulk.execute().then(() => {

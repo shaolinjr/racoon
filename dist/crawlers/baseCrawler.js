@@ -246,7 +246,7 @@ class BaseCrawler {
             links.forEach((link) => {
                 // const formattedLink: ILink = { url: link, extractedAt: new Date(), source: this.BASE_URL, used: false }
                 counter++;
-                bulk.find({ url: link, used: false }).upsert().updateOne(link);
+                bulk.find({ url: link, used: false }).upsert().updateOne({ $set: link });
             });
             return bulk.execute().then(() => {
                 this.logger.debug(`Persisted ${counter} links to the database!`);
