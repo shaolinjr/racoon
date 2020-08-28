@@ -24,12 +24,12 @@ class DefaultExporter {
         this.flatten = json2csv.transforms.flatten({ separator: "_", objects: true, arrays: false });
         file_1.checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS);
     }
-    async parseBaseFile(encoding = "utf-8", delimiter = ";") {
-        switch (file_1.getFileExtension(this.baseFilePath)) {
+    async parseBaseFile(encoding = "utf-8", delimiter = ";", filePath) {
+        switch (file_1.getFileExtension(filePath || this.baseFilePath)) {
             case ".csv":
                 return csvtojson_1.default({ delimiter }).fromFile(this.baseFilePath);
             case ".json":
-                return JSON.parse(fs.readFileSync(this.baseFilePath, { encoding }));
+                return JSON.parse(fs.readFileSync(filePath || this.baseFilePath, { encoding }));
         }
     }
     async convertJSONToCSV(options = {}, data) {

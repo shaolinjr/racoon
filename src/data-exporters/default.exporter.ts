@@ -16,12 +16,12 @@ export class DefaultExporter {
         checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS)
     }
 
-    public async parseBaseFile(encoding: string = "utf-8", delimiter: string = ";") {
-        switch (getFileExtension(this.baseFilePath)) {
+    public async parseBaseFile(encoding: string = "utf-8", delimiter: string = ";", filePath?: string) {
+        switch (getFileExtension(filePath || this.baseFilePath)) {
             case ".csv":
                 return csvtojson({ delimiter }).fromFile(this.baseFilePath)
             case ".json":
-                return JSON.parse(fs.readFileSync(this.baseFilePath, { encoding }))
+                return JSON.parse(fs.readFileSync(filePath || this.baseFilePath, { encoding }))
         }
     }
 

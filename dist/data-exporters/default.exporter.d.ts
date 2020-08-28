@@ -5,7 +5,7 @@ export declare class DefaultExporter {
     protected ALLOWED_EXTENSIONS: FILE_EXTENSIONS[];
     protected flatten: json2csv.transforms.Json2CsvTransform<any, any>;
     constructor(baseFilePath: string);
-    parseBaseFile(encoding?: string, delimiter?: string): Promise<any>;
+    parseBaseFile(encoding?: string, delimiter?: string, filePath?: string): Promise<any>;
     convertJSONToCSV(options?: json2csv.default.Options<any>, data?: any[]): Promise<string>;
     /**
      * Method to perform the conversion from JSON to CSV in an async fashion. Takes advantage of the Streaming API.
