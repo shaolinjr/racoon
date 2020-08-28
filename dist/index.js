@@ -19,6 +19,6 @@ exports.checkFile = helpers_1.checkFile;
 // export * from './models'
 var data_exporters_1 = require("./data-exporters");
 exports.S3 = data_exporters_1.S3;
-exports.DefaultExporter = data_exporters_1.DefaultExporter;
+exports.FileParser = data_exporters_1.FileParser;
 var manageProviders_1 = require("./manageProviders");
 exports.ProviderManager = manageProviders_1.ProviderManager;

@@ -6,7 +6,7 @@ import { createReadStream, createWriteStream } from 'fs'
 import { FILE_EXTENSIONS } from '../constants/fileExtensions.constants'
 import { getFileExtension, checkFile } from '../helpers/file'
 
-export class DefaultExporter {
+export class FileParser {
 
     protected ALLOWED_EXTENSIONS = [FILE_EXTENSIONS.JSON, FILE_EXTENSIONS.CSV]
 
@@ -16,12 +16,14 @@ export class DefaultExporter {
         checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS)
     }
 
-    public async parseBaseFile(encoding: string = "utf-8", delimiter: string = ";", filePath?: string) {
+    public async parseBaseFile(options?: { encoding: string, delimiter: string, filePath?: string }) {
+        const { encoding, delimiter, filePath } = options
+
         switch (getFileExtension(filePath || this.baseFilePath)) {
             case ".csv":
-                return csvtojson({ delimiter }).fromFile(this.baseFilePath)
+                return csvtojson({ delimiter: delimiter || ";" }).fromFile(filePath || this.baseFilePath)
             case ".json":
-                return JSON.parse(fs.readFileSync(filePath || this.baseFilePath, { encoding }))
+                return JSON.parse(fs.readFileSync(filePath || this.baseFilePath, { encoding: encoding || "utf-8" }))
         }
     }
 

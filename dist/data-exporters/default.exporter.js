@@ -17,19 +17,20 @@ const fs = __importStar(require("fs"));
 const fs_1 = require("fs");
 const fileExtensions_constants_1 = require("../constants/fileExtensions.constants");
 const file_1 = require("../helpers/file");
-class DefaultExporter {
+class FileParser {
     constructor(baseFilePath) {
         this.baseFilePath = baseFilePath;
         this.ALLOWED_EXTENSIONS = [fileExtensions_constants_1.FILE_EXTENSIONS.JSON, fileExtensions_constants_1.FILE_EXTENSIONS.CSV];
         this.flatten = json2csv.transforms.flatten({ separator: "_", objects: true, arrays: false });
         file_1.checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS);
     }
-    async parseBaseFile(encoding = "utf-8", delimiter = ";", filePath) {
+    async parseBaseFile(options) {
+        const { encoding, delimiter, filePath } = options;
         switch (file_1.getFileExtension(filePath || this.baseFilePath)) {
             case ".csv":
-                return csvtojson_1.default({ delimiter }).fromFile(this.baseFilePath);
+                return csvtojson_1.default({ delimiter: delimiter || ";" }).fromFile(filePath || this.baseFilePath);
             case ".json":
-                return JSON.parse(fs.readFileSync(filePath || this.baseFilePath, { encoding }));
+                return JSON.parse(fs.readFileSync(filePath || this.baseFilePath, { encoding: encoding || "utf-8" }));
         }
     }
     async convertJSONToCSV(options = {}, data) {
@@ -78,4 +79,4 @@ class DefaultExporter {
         });
     }
 }
-exports.DefaultExporter = DefaultExporter;
+exports.FileParser = FileParser;

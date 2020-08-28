@@ -26,7 +26,7 @@ export {
 
 export {
     S3,
-    DefaultExporter
+    FileParser
 } from './data-exporters'
 
 export {
