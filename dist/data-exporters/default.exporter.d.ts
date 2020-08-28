@@ -6,8 +6,8 @@ export declare class FileParser {
     protected flatten: json2csv.transforms.Json2CsvTransform<any, any>;
     constructor(baseFilePath: string);
     parseBaseFile(options?: {
-        encoding: string;
-        delimiter: string;
+        encoding?: string;
+        delimiter?: string;
         filePath?: string;
     }): Promise<any>;
     convertJSONToCSV(options?: json2csv.default.Options<any>, data?: any[]): Promise<string>;

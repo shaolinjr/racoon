@@ -16,7 +16,7 @@ export class FileParser {
         checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS)
     }
 
-    public async parseBaseFile(options?: { encoding: string, delimiter: string, filePath?: string }) {
+    public async parseBaseFile(options?: { encoding?: string, delimiter?: string, filePath?: string }) {
         const { encoding, delimiter, filePath } = options
 
         switch (getFileExtension(filePath || this.baseFilePath)) {
