@@ -25,12 +25,13 @@ class FileParser {
         file_1.checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS);
     }
     async parseBaseFile(options) {
-        const { encoding, delimiter, filePath } = options;
-        switch (file_1.getFileExtension(filePath || this.baseFilePath)) {
+        // const { encoding, delimiter, filePath } = options
+        var _a, _b, _c, _d, _e;
+        switch (file_1.getFileExtension(((_a = options) === null || _a === void 0 ? void 0 : _a.filePath) || this.baseFilePath)) {
             case ".csv":
-                return csvtojson_1.default({ delimiter: delimiter || ";" }).fromFile(filePath || this.baseFilePath);
+                return csvtojson_1.default({ delimiter: ((_b = options) === null || _b === void 0 ? void 0 : _b.delimiter) || ";" }).fromFile(((_c = options) === null || _c === void 0 ? void 0 : _c.filePath) || this.baseFilePath);
             case ".json":
-                return JSON.parse(fs.readFileSync(filePath || this.baseFilePath, { encoding: encoding || "utf-8" }));
+                return JSON.parse(fs.readFileSync(((_d = options) === null || _d === void 0 ? void 0 : _d.filePath) || this.baseFilePath, { encoding: ((_e = options) === null || _e === void 0 ? void 0 : _e.encoding) || "utf-8" }));
         }
     }
     async convertJSONToCSV(options = {}, data) {

@@ -17,13 +17,14 @@ export class FileParser {
     }
 
     public async parseBaseFile(options?: { encoding?: string, delimiter?: string, filePath?: string }) {
-        const { encoding, delimiter, filePath } = options
 
-        switch (getFileExtension(filePath || this.baseFilePath)) {
+        // const { encoding, delimiter, filePath } = options
+
+        switch (getFileExtension(options?.filePath || this.baseFilePath)) {
             case ".csv":
-                return csvtojson({ delimiter: delimiter || ";" }).fromFile(filePath || this.baseFilePath)
+                return csvtojson({ delimiter: options?.delimiter || ";" }).fromFile(options?.filePath || this.baseFilePath)
             case ".json":
-                return JSON.parse(fs.readFileSync(filePath || this.baseFilePath, { encoding: encoding || "utf-8" }))
+                return JSON.parse(fs.readFileSync(options?.filePath || this.baseFilePath, { encoding: options?.encoding || "utf-8" }))
         }
     }
 
