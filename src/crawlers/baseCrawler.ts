@@ -92,7 +92,7 @@ export class BaseCrawler { // extends Crawler
         return links
     }
 
-    public async runExtractDetails(links: ILink[], options: ExtractDetailsOptions = this.defaultCrawlerOptions.extractDetailsOptions) {
+    public async runExtractDetails(links: Array<any | ILink>, options: ExtractDetailsOptions = this.defaultCrawlerOptions.extractDetailsOptions) {
         let resultDetails = []
         const db = this.storage.getDB()
         try {
@@ -112,7 +112,9 @@ export class BaseCrawler { // extends Crawler
                                 this.logger.info(`Persisted details for: ${link}`)
                             }
                         }
+
                         await db.collection(this.urlsCollection).updateMany({ url: link, used: false }, { $set: { used: true, usedAt: new Date() } })
+
                         this.logger.debug("Updated the urls state to 'used:true' in db.")
                     }
                     return details
