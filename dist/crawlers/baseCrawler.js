@@ -187,7 +187,7 @@ class BaseCrawler {
         //     this.logger.error(`Shit happened on the concurrency part...: ${error}`)
         // }
         // await storage.closeDBConnection()
-        events_1.BaseCrawlerEvents.emit("finishedRun");
+        events_1.BaseCrawlerEvents.emit("run:finished");
         return resultDetails;
     }
     async makeRequest(url, options) {

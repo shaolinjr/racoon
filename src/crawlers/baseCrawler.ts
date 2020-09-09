@@ -197,7 +197,7 @@ export class BaseCrawler { // extends Crawler
         // }
 
         // await storage.closeDBConnection()
-        BaseCrawlerEvents.emit("finishedRun")
+        BaseCrawlerEvents.emit("run:finished")
         return resultDetails
     }
 
