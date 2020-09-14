@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getLoadBalancerStrategy = void 0;
 function getLoadBalancerStrategy(params) {
     let concurrency = 1;
     const idealRequestsPerHour = Math.ceil(params.urlsCount / params.finishInHours); // number of requests/hour that must be made to finish in time

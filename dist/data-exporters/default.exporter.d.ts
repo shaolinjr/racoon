@@ -1,10 +1,10 @@
 import * as json2csv from 'json2csv';
 import { FILE_EXTENSIONS } from '../constants/fileExtensions.constants';
 export declare class FileParser {
-    private baseFilePath;
+    private baseFilePath?;
     protected ALLOWED_EXTENSIONS: FILE_EXTENSIONS[];
     protected flatten: json2csv.transforms.Json2CsvTransform<any, any>;
-    constructor(baseFilePath: string);
+    constructor(baseFilePath?: string);
     parseBaseFile(options?: {
         encoding?: string;
         delimiter?: string;

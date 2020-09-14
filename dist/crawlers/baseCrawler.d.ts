@@ -1,13 +1,13 @@
-/// <reference types="bluebird" />
 import winston from 'winston';
 import { Db } from 'mongodb';
 import { CrawlerStorage } from '../storage';
 import { CrawlerRunOptions, ILink, CrawlerRequestOptions, ExtractDetailsOptions, ExtractLinksOptions } from '../models';
+import Bluebird from 'bluebird';
 export declare class BaseCrawler {
     storage: CrawlerStorage;
     private detailsCollection;
     private urlsCollection;
-    join: typeof import("bluebird").join;
+    join: typeof Bluebird.join;
     protected MIN_REST_TIME: number;
     protected MAX_RETRY_ATTEMPTS: number;
     protected logger: winston.Logger;

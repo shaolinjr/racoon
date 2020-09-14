@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProviderManager = void 0;
 const mongodb_1 = require("mongodb");
 const date_fns_1 = require("date-fns");
 class ProviderManager {

@@ -1,15 +1,28 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FileParser = void 0;
 const csvtojson_1 = __importDefault(require("csvtojson"));
 const json2csv = __importStar(require("json2csv"));
 const json2csv_1 = require("json2csv");
@@ -22,16 +35,17 @@ class FileParser {
         this.baseFilePath = baseFilePath;
         this.ALLOWED_EXTENSIONS = [fileExtensions_constants_1.FILE_EXTENSIONS.JSON, fileExtensions_constants_1.FILE_EXTENSIONS.CSV];
         this.flatten = json2csv.transforms.flatten({ separator: "_", objects: true, arrays: false });
-        file_1.checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS);
+        if (baseFilePath) {
+            file_1.checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS);
+        }
     }
     async parseBaseFile(options) {
         // const { encoding, delimiter, filePath } = options
-        var _a, _b, _c, _d, _e;
-        switch (file_1.getFileExtension(((_a = options) === null || _a === void 0 ? void 0 : _a.filePath) || this.baseFilePath)) {
+        switch (file_1.getFileExtension((options === null || options === void 0 ? void 0 : options.filePath) || this.baseFilePath)) {
             case ".csv":
-                return csvtojson_1.default({ delimiter: ((_b = options) === null || _b === void 0 ? void 0 : _b.delimiter) || ";" }).fromFile(((_c = options) === null || _c === void 0 ? void 0 : _c.filePath) || this.baseFilePath);
+                return csvtojson_1.default({ delimiter: (options === null || options === void 0 ? void 0 : options.delimiter) || ";" }).fromFile((options === null || options === void 0 ? void 0 : options.filePath) || this.baseFilePath);
             case ".json":
-                return JSON.parse(fs.readFileSync(((_d = options) === null || _d === void 0 ? void 0 : _d.filePath) || this.baseFilePath, { encoding: ((_e = options) === null || _e === void 0 ? void 0 : _e.encoding) || "utf-8" }));
+                return JSON.parse(fs.readFileSync((options === null || options === void 0 ? void 0 : options.filePath) || this.baseFilePath, { encoding: (options === null || options === void 0 ? void 0 : options.encoding) || "utf-8" }));
         }
     }
     async convertJSONToCSV(options = {}, data) {

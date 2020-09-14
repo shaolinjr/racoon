@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RenewalFrequencyEnum = void 0;
 var RenewalFrequencyEnum;
 (function (RenewalFrequencyEnum) {
     RenewalFrequencyEnum["MONTHLY"] = "MONTHLY";

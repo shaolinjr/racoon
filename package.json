@@ -1,6 +1,6 @@
 {
   "name": "rakoon",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Swift, Precise and Furtive Web Scraping Library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -35,7 +35,7 @@
     "@types/date-fns": "^2.6.0",
     "@types/dotenv": "^8.2.0",
     "@types/json2csv": "^5.0.0",
-    "@types/mongodb": "^3.5.8",
+    "@types/mongodb": "^3.5.27",
     "@types/winston": "^2.4.4",
     "jest": "^25.3.0"
   }

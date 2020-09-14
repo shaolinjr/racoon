@@ -1,15 +1,28 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BaseCrawler = void 0;
 const axios = __importStar(require("axios"));
 const winston_1 = __importDefault(require("winston"));
 const winston_2 = require("winston");
@@ -17,7 +30,9 @@ const loggers_1 = require("../loggers");
 const Helper = __importStar(require("../helpers/functions"));
 const events_1 = require("../events");
 const errors_1 = require("../errors");
-global.Promise = require("bluebird"); // Workaround for TypeScript
+const bluebird_1 = __importDefault(require("bluebird"));
+const bluebird_2 = require("bluebird");
+// global.BPromise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default;
 // export abstract class Crawler {
 //     protected MIN_REST_TIME: number
@@ -26,8 +41,8 @@ const Axios = axios.default;
 //     protected STORAGE_URL: string
 //     protected STORAGE_DB: string
 //     protected SOURCE: { name: string, url: string }
-//     protected async abstract extractLinks(options?: any): Promise<string[] | any[]>
-//     protected async abstract extractDetails(url: string | any): Promise<any[] | any | null>
+//     protected async abstract extractLinks(options?: any): BPromise<string[] | any[]>
+//     protected async abstract extractDetails(url: string | any): BPromise<any[] | any | null>
 //     constructor(public storage: CrawlerStorage) { }
 // }
 class BaseCrawler {
@@ -35,7 +50,7 @@ class BaseCrawler {
         this.storage = storage;
         this.detailsCollection = detailsCollection;
         this.urlsCollection = urlsCollection;
-        this.join = Promise.join;
+        this.join = bluebird_1.default.join;
         this.MIN_REST_TIME = 1000;
         this.MAX_RETRY_ATTEMPTS = 3;
         this.BASE_URL = "<this-should-be-overriden>";
@@ -91,7 +106,7 @@ class BaseCrawler {
         const db = this.storage.getDB();
         try {
             let detailsCounter = 0;
-            await Promise.map(links, async (link) => {
+            await bluebird_2.Promise.map(links, async (link) => {
                 this.logger.debug(`Getting details for: ${link}`);
                 const details = this.extractDetails(link);
                 const rest = Helper.timeoutPromise(options.waitFor);
@@ -155,7 +170,7 @@ class BaseCrawler {
         let resultDetails = await this.runExtractDetails(links, options.extractDetailsOptions);
         // try {
         //     let detailsCounter = 0
-        //     await Promise.map(links, async (link: any) => { //.slice(lastIndex)
+        //     await BPromise.map(links, async (link: any) => { //.slice(lastIndex)
         //         this.logger.debug(`Getting details for: ${link}`)
         //         const details = this.extractDetails(link)
         //         const rest = Helper.timeoutPromise(options.extractDetailsOptions.waitFor)

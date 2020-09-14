@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FILE_EXTENSIONS = void 0;
 var FILE_EXTENSIONS;
 (function (FILE_EXTENSIONS) {
     FILE_EXTENSIONS["JSON"] = ".json";

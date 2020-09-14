@@ -11,9 +11,10 @@ import { EventEmitter } from 'events'
 import { BaseCrawlerEvents } from '../events'
 import { EmptyResponseError } from '../errors'
 
-global.Promise = require("bluebird"); // Workaround for TypeScript
+import Bluebird from 'bluebird'
+import { Promise as BPromise } from 'bluebird'
+// global.BPromise = require("bluebird"); // Workaround for TypeScript
 const Axios = axios.default
-
 // export abstract class Crawler {
 //     protected MIN_REST_TIME: number
 //     protected MAX_RETRY_ATTEMPTS: number
@@ -22,14 +23,13 @@ const Axios = axios.default
 //     protected STORAGE_DB: string
 //     protected SOURCE: { name: string, url: string }
 
-//     protected async abstract extractLinks(options?: any): Promise<string[] | any[]>
-//     protected async abstract extractDetails(url: string | any): Promise<any[] | any | null>
+//     protected async abstract extractLinks(options?: any): BPromise<string[] | any[]>
+//     protected async abstract extractDetails(url: string | any): BPromise<any[] | any | null>
 //     constructor(public storage: CrawlerStorage) { }
 // }
 
 export class BaseCrawler { // extends Crawler 
-    public join = Promise.join
-
+    public join = Bluebird.join
     protected MIN_REST_TIME = 1000
     protected MAX_RETRY_ATTEMPTS = 3
     protected logger: winston.Logger
@@ -97,7 +97,7 @@ export class BaseCrawler { // extends Crawler
         const db = this.storage.getDB()
         try {
             let detailsCounter = 0
-            await Promise.map(links, async (link: any) => { //.slice(lastIndex)
+            await BPromise.map(links, async (link: any) => { //.slice(lastIndex)
                 this.logger.debug(`Getting details for: ${link}`)
                 const details = this.extractDetails(link)
                 const rest = Helper.timeoutPromise(options.waitFor)
@@ -164,7 +164,7 @@ export class BaseCrawler { // extends Crawler
         let resultDetails = await this.runExtractDetails(links, options.extractDetailsOptions)
         // try {
         //     let detailsCounter = 0
-        //     await Promise.map(links, async (link: any) => { //.slice(lastIndex)
+        //     await BPromise.map(links, async (link: any) => { //.slice(lastIndex)
         //         this.logger.debug(`Getting details for: ${link}`)
         //         const details = this.extractDetails(link)
         //         const rest = Helper.timeoutPromise(options.extractDetailsOptions.waitFor)

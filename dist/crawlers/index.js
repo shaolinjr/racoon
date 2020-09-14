@@ -1,4 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BaseCrawler = void 0;
 var baseCrawler_1 = require("./baseCrawler");
-exports.BaseCrawler = baseCrawler_1.BaseCrawler;
+Object.defineProperty(exports, "BaseCrawler", { enumerable: true, get: function () { return baseCrawler_1.BaseCrawler; } });

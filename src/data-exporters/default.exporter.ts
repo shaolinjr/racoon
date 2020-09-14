@@ -12,8 +12,10 @@ export class FileParser {
 
     protected flatten = json2csv.transforms.flatten({ separator: "_", objects: true, arrays: false })
 
-    constructor(private baseFilePath: string) {
-        checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS)
+    constructor(private baseFilePath?: string) {
+        if (baseFilePath) {
+            checkFile(this.baseFilePath, this.ALLOWED_EXTENSIONS)
+        }
     }
 
     public async parseBaseFile(options?: { encoding?: string, delimiter?: string, filePath?: string }) {
