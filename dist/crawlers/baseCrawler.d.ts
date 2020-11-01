@@ -27,7 +27,7 @@ export declare class BaseCrawler {
     private defaultCrawlerOptions;
     private defaultCrawlerRequestOptions;
     runExtractLinks(options?: ExtractLinksOptions): Promise<ILink[]>;
-    runExtractDetails(links: Array<any | ILink>, options?: ExtractDetailsOptions): Promise<any[]>;
+    runExtractDetails(links: Array<any | ILink>, options?: ExtractDetailsOptions): Promise<number>;
     run(options?: CrawlerRunOptions): Promise<any>;
     protected makeRequest(url: string, options?: CrawlerRequestOptions): any;
     protected extractLinks(options?: any): Promise<string[] | any[]>;

@@ -95,6 +95,7 @@ class BaseCrawler {
             this.logger.info(`Found this amount of links: ${links.length}`);
         }
         catch (error) {
+            events_1.BaseCrawlerEvents.emit("extractLinks:error", error);
             this.logger.error("runExtractLinks error: " + JSON.stringify(error));
             throw error;
         }
@@ -102,9 +103,10 @@ class BaseCrawler {
         return links;
     }
     async runExtractDetails(links, options = this.defaultCrawlerOptions.extractDetailsOptions) {
-        let resultDetails = [];
-        const db = this.storage.getDB();
+        // let resultDetails = []
+        let resultsCounter = 0;
         try {
+            const db = this.storage.getDB();
             let detailsCounter = 0;
             await bluebird_2.Promise.map(links, async (link) => {
                 this.logger.debug(`Getting details for: ${link}`);
@@ -132,76 +134,34 @@ class BaseCrawler {
                     const result = promise.value();
                     if (result) {
                         if (result.hasOwnProperty("length") && result.length) {
-                            resultDetails.push(...result);
+                            // resultDetails.push(...result)
+                            resultsCounter += result.length;
                         }
                         else {
-                            resultDetails.push(result);
+                            // resultDetails.push(result)
+                            resultsCounter++;
                         }
                     }
                 }
                 else {
                     this.logger.error("runExtractDetails error: " + JSON.stringify(promise.reason()));
+                    events_1.BaseCrawlerEvents.emit("runExtractDetails:error", promise.reason());
                 }
             });
         }
         catch (error) {
-            this.logger.error(`Shit happened on the concurrency part...: ${error}`);
+            this.logger.error(`Error somewhere on runExtractDetails: ${error}`);
             throw error;
         }
         events_1.BaseCrawlerEvents.emit("extractDetails:finished");
-        return resultDetails;
+        // return resultDetails
+        return resultsCounter;
     }
     async run(options = this.defaultCrawlerOptions) {
-        // let { storage, client, scrapingDB } = await this.setupDB()
         // get the links
         let links = await this.runExtractLinks(options.extractLinksOptions);
-        // if (options.extractLinksOptions.linksFromDB) {
-        //     this.logger.debug("About to fetch unused links from the db")
-        //     links = await this.getUnusedLinks(scrapingDB, options.extractLinksOptions.dbLinksFilter)
-        // }
-        // if (!links.length) {
-        //     links = await this.extractLinks(options.extractLinksOptions)
-        //     // console.log("Links: ", links)
-        //     const formattedLinks: ILink[] = links.map((link: any) => this.formatLink(link, this.BASE_URL))
-        //     await this.persistLinks(formattedLinks, scrapingDB) // broke here timed out connection
-        // }
-        // this.logger.info(`Found this amount of links: ${links.length}`)
         // get the details
         let resultDetails = await this.runExtractDetails(links, options.extractDetailsOptions);
-        // try {
-        //     let detailsCounter = 0
-        //     await BPromise.map(links, async (link: any) => { //.slice(lastIndex)
-        //         this.logger.debug(`Getting details for: ${link}`)
-        //         const details = this.extractDetails(link)
-        //         const rest = Helper.timeoutPromise(options.extractDetailsOptions.waitFor)
-        //         return this.join(details, rest, async (details: any, rest) => {
-        //             if (details) {
-        //                 detailsCounter++;
-        //                 this.logger.info(`Details progress: ${detailsCounter}/${links.length}`)
-        //                 this.logger.debug(`Details: ${JSON.stringify(details)}`)
-        //                 if (details.hasOwnProperty("length") && details.length || details) {
-        //                     await this.persistDetails(details, scrapingDB)
-        //                     this.logger.debug(`Persisted details for: ${link}`)
-        //                 }
-        //                 await scrapingDB.collection(this.urlsCollection).updateMany({ url: link, used: false }, { $set: { used: true, usedAt: new Date() } })
-        //                 this.logger.debug("Updated the urls state to 'used:true' in db.")
-        //             }
-        //             return details
-        //         })
-        //     }, { concurrency: options.extractDetailsOptions.concurrency })
-        //         .each((batchResult: any) => {
-        //             if (batchResult) {
-        //                 if (batchResult.hasOwnProperty("length") && batchResult.length) {
-        //                     resultDetails.push(...batchResult)
-        //                 } else {
-        //                     resultDetails.push(batchResult)
-        //                 }
-        //             }
-        //         })
-        // } catch (error) {
-        //     this.logger.error(`Shit happened on the concurrency part...: ${error}`)
-        // }
-        // await storage.closeDBConnection()
         events_1.BaseCrawlerEvents.emit("run:finished");
         return resultDetails;
     }
@@ -228,14 +188,15 @@ class BaseCrawler {
                 throw error;
             }
             if (error.response) {
-                console.log("Notifying error on makeRequest: ", error.response.status);
+                this.logger.error(`Notifying error on makeRequest: ${error.response.status}`);
                 if (options.retryCounter >= options.maxRetries || error.response.status == 404) {
-                    console.log("Couldn't proceed...: ", url);
+                    this.logger.info("Couldn't proceed...: ", url);
                     throw error;
                 }
                 else {
+                    this.logger.info(`Retrying ${url}. Retries left: ${options.maxRetries - options.retryCounter}`);
                     await Helper.timeoutPromise(options.retryIn); // resting for a while and then returning something
-                    console.log("Requesting again!: ", url);
+                    // console.log("Requesting again!: ", url)
                     options.retryCounter++;
                     return await this.makeRequest(url, options);
                 }
@@ -279,7 +240,7 @@ class BaseCrawler {
         }
     }
     async getUnusedLinks(db, filter, detailed = false) {
-        const queryFilter = filter ? { ...filter, used: false } : { used: false };
+        const queryFilter = filter ? { ...filter } : { used: false };
         console.log("QUERY FILTER: ", queryFilter);
         let unique = new Set();
         if (detailed) {
