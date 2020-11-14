@@ -8,7 +8,7 @@ import { MongoClientOptions, MongoClient, Collection, Db } from "mongodb";
 export class CrawlerStorage {
     protected db: Db
     protected client: MongoClient
-    constructor(private uri: string, private dbName: string, private options: MongoClientOptions = null) {
+    constructor(private uri: string, private dbName: string, private options: MongoClientOptions = { useUnifiedTopology: true }) {
     }
 
     public getDB() {
