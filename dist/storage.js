@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrawlerStorage = void 0;
 const mongodb_1 = require("mongodb");
 class CrawlerStorage {
-    constructor(uri, dbName, options = null) {
+    constructor(uri, dbName, options = { useUnifiedTopology: true }) {
         this.uri = uri;
         this.dbName = dbName;
         this.options = options;
