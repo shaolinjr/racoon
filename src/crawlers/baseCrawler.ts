@@ -93,7 +93,7 @@ export class BaseCrawler { // extends Crawler
         return links
     }
 
-    public async runExtractDetails(links: Array<any | ILink>, options: ExtractDetailsOptions = this.defaultCrawlerOptions.extractDetailsOptions) {
+    public async runExtractDetails(links: Array<any | ILink>, options: ExtractDetailsOptions = this.defaultCrawlerOptions.extractDetailsOptions):Promise<number> {
         // let resultDetails = []
         let resultsCounter = 0
         try {
